@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Taxable Tracker</title>
+    <style>
+      body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
+      .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+      a.button { display: inline-block; padding: 10px 12px; border: 1px solid #333; border-radius: 10px; text-decoration: none; margin-right: 8px; margin-bottom: 8px;}
+      input, select { padding: 10px; width: 100%; margin: 6px 0 12px; border-radius: 10px; border: 1px solid #ccc; }
+      button { padding: 10px 12px; border-radius: 10px; border: 0; background:#111; color:#fff; }
+      .row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+      @media (min-width: 800px) { .row { grid-template-columns: 1fr 1fr; } }
+      table { width: 100%; border-collapse: collapse; }
+      td, th { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
+      .muted { color:#666; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <h1>Taxable Tracker</h1>
+    <p class="muted">Single-user tracker for rental income/expenses + fuel logs.</p>
+
+    <div class="card"><a class="button" href="/ui/transaction/new?type=income&category=Rental%20Income">
+  Add Rental Income
+</a>
+
+<a class="button" href="/ui/transaction/new?type=expense&category=Dining">
+  Add Dining
+</a>
+
+<a class="button" href="/ui/transaction/new?type=expense&category=Car%20Repairs">
+  Add Car Repairs
+</a>
+
+<a class="button" href="/ui/fuel/new">
+  Add Fuel
+</a>
+
+      <strong>Quick actions</strong><br/><br/>
+      <a class="button" href="/ui/transaction/new">Add Transaction</a>
+      <a class="button" href="/ui/fuel/new">Add Fuel Fill-up</a>
+      <a class="button" href="/docs">API Docs</a>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <h3>Recent Transactions</h3>
+        <table>
+          <tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th></tr>
+          {% for t in transactions %}
+          <tr>
+            <td>{{ t.tx_date }}</td>
+            <td>{{ t.type }}</td>
+            <td>{{ t.category }}</td>
+            <td>${{ '%.2f'|format(t.amount) }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% if transactions|length == 0 %}
+          <p class="muted">No transactions yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h3>Recent Fuel</h3>
+        <table>
+          <tr><th>Date</th><th>Odo</th><th>L</th><th>Cost</th></tr>
+          {% for f in fuel %}
+          <tr>
+            <td>{{ f.fill_date }}</td>
+            <td>{{ f.odometer_km }}</td>
+            <td>{{ '%.1f'|format(f.litres) }}</td>
+            <td>${{ '%.2f'|format(f.total_cost) }}</td>
+          </tr>
+          {% endfor %}
+        </table>
+        {% if fuel|length == 0 %}
+          <p class="muted">No fuel entries yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </body>
+</html>
