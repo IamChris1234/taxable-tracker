@@ -54,6 +54,14 @@ def require_login(credentials: HTTPBasicCredentials = Depends(security)):
 
 # Protect ALL /ui routes automatically
 ui = APIRouter(prefix="/ui", dependencies=[Depends(require_login)])
+@ui.get("/logout", response_class=HTMLResponse)
+def ui_logout():
+    # Forces the browser to re-prompt for credentials next time
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Logged out",
+        headers={"WWW-Authenticate": "Basic"},
+    )
 
 # =========================
 # Database

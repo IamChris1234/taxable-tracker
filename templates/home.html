@@ -14,8 +14,26 @@
     h2 { margin: 0; }
     .muted { color:#666; font-size: 14px; }
   </style>
+  <style>
+  .topbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom: 14px;
+  }
+  .brand a { text-decoration:none; color: inherit; font-weight: 700; }
+  .actions { display:flex; gap: 10px; }
+  .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
+</style>
+
 </head>
 <body>
+<div class="topbar">
+  <div class="brand"><a href="/ui">Taxable Tracker</a></div>
+  <div class="actions">
+    <a class="button" href="/ui/logout">Log out</a>
+  </div>
+</div>
 
   <div class="card">
     <h2>Taxable Tracker</h2>
