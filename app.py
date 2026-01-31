@@ -207,11 +207,20 @@ def ui_report(request: Request, year: int = date.today().year):
             )
         ).all()
 
-    by_month = {}
-    by_category_expense = {}
+        fuels = session.exec(
+            select(FuelLog).where(
+                FuelLog.fill_date >= start,
+                FuelLog.fill_date < end,
+            )
+        ).all()
+
+    by_month: dict[str, dict[str, float]] = {}
+    by_category_expense: dict[str, float] = {}
+
     income_total = 0.0
     expense_total = 0.0
 
+    # ---- Transactions ----
     for t in txs:
         month = t.tx_date.strftime("%Y-%m")
         by_month.setdefault(month, {"income": 0.0, "expense": 0.0, "net": 0.0})
@@ -223,6 +232,18 @@ def ui_report(request: Request, year: int = date.today().year):
             by_month[month]["expense"] += t.amount
             expense_total += t.amount
             by_category_expense[t.category] = by_category_expense.get(t.category, 0.0) + t.amount
+
+        by_month[month]["net"] = by_month[month]["income"] - by_month[month]["expense"]
+
+    # ---- Fuel logs (count as expense) ----
+    for f in fuels:
+        month = f.fill_date.strftime("%Y-%m")
+        by_month.setdefault(month, {"income": 0.0, "expense": 0.0, "net": 0.0})
+
+        by_month[month]["expense"] += float(f.total_cost)
+        expense_total += float(f.total_cost)
+
+        by_category_expense["Fuel"] = by_category_expense.get("Fuel", 0.0) + float(f.total_cost)
 
         by_month[month]["net"] = by_month[month]["income"] - by_month[month]["expense"]
 
@@ -241,6 +262,7 @@ def ui_report(request: Request, year: int = date.today().year):
             ),
         },
     )
+
 
 
 @ui.get("/export.csv")

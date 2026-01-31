@@ -15,6 +15,36 @@
     .muted { color:#666; font-size: 14px; }
   </style>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const pieLabels = [
+    {% for cat, amt in by_category %}
+      "{{ cat }}",
+    {% endfor %}
+  ];
+
+  const pieData = [
+    {% for cat, amt in by_category %}
+      {{ amt }},
+    {% endfor %}
+  ];
+
+  const ctxPie = document.getElementById("expensePie").getContext("2d");
+
+  new Chart(ctxPie, {
+    type: "pie",
+    data: {
+      labels: pieLabels,
+      datasets: [{
+        data: pieData
+      }]
+    },
+    options: {
+      responsive: true
+    }
+  });
+</script>
+
 <body>
 
   <div class="card">
@@ -55,6 +85,10 @@
 
   <div class="card">
     <h3>Expenses by category</h3>
+    <div class="card">
+  <h3>Expenses by category (pie)</h3>
+  <canvas id="expensePie"></canvas>
+</div>
     <table>
       <tr>
         <th>Category</th>
