@@ -214,6 +214,7 @@ def ui_create_transaction(
 @app.get("/ui/fuel/new", response_class=HTMLResponse)
 def ui_new_fuel(request: Request):
     return templates.TemplateResponse("new_fuel.html", {"request": request})
+app.include_router(ui)
 
 
 @app.post("/ui/fuel/new")
