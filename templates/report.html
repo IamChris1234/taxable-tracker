@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Reports</title>
+  <style>
+    body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
+    .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
+    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align:left; }
+    h2 { margin: 0 0 6px; }
+    .muted { color:#666; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Reports — {{ year }}</h2>
+    <div class="muted">Year-to-date totals</div>
+
+    <div class="row">
+      <a class="button" href="/ui">⬅️ Home</a>
+      <a class="button" href="/ui/export.csv?year={{ year }}">📤 Export CSV</a>
+    </div>
+
+    <div style="margin-top:12px;">
+      <div><strong>Income:</strong> ${{ '%.2f'|format(income_total) }}</div>
+      <div><strong>Expenses:</strong> ${{ '%.2f'|format(expense_total) }}</div>
+      <div><strong>Net:</strong> ${{ '%.2f'|format(net_total) }}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Monthly breakdown</h3>
+    <table>
+      <tr>
+        <th>Month</th>
+        <th>Income</th>
+        <th>Expenses</th>
+        <th>Net</th>
+      </tr>
+      {% for month, m in months %}
+      <tr>
+        <td>{{ month }}</td>
+        <td>${{ '%.2f'|format(m["income"]) }}</td>
+        <td>${{ '%.2f'|format(m["expense"]) }}</td>
+        <td>${{ '%.2f'|format(m["net"]) }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>Expenses by category</h3>
+    <table>
+      <tr>
+        <th>Category</th>
+        <th>Total</th>
+      </tr>
+      {% for cat, amt in by_category %}
+      <tr>
+        <td>{{ cat }}</td>
+        <td>${{ '%.2f'|format(amt) }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div class="muted" style="margin-top:10px;">
+      Next: we’ll add the bar chart here.
+    </div>
+  </div>
+
+</body>
+</html>
