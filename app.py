@@ -1,15 +1,50 @@
 from datetime import date
 from typing import Optional
+import os
+import secrets
 
-from fastapi import FastAPI, Request, Form
+from fastapi import (
+    FastAPI,
+    Request,
+    Form,
+    Depends,
+    HTTPException,
+    status,
+)
 from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
+
 from sqlmodel import Field, SQLModel, Session, create_engine, select
 
 
 app = FastAPI(title="Taxable Tracker (Single User)")
 
-import os
+security = HTTPBasic()
+
+def require_login(credentials: HTTPBasicCredentials = Depends(security)):
+    user = os.getenv("APP_USER", "")
+    pw = os.getenv("APP_PASS", "")
+
+    ok_user = secrets.compare_digest(credentials.username, user)
+    ok_pw = secrets.compare_digest(credentials.password, pw)
+
+    if not (ok_user and ok_pw):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Unauthorized",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
+
+
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.templating import Jinja2Templates
+
+from sqlmodel import Field, SQLModel, Session, create_engine, select
+
 
 db_url = os.getenv("DATABASE_URL", "sqlite:///tracker.db")
 
