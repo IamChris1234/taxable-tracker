@@ -7,20 +7,55 @@
   <style>
     body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
     .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; max-width: 520px; }
-    label { display:block; margin-top: 12px; font-size: 14px; color:#333; }
-    input, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius: 10px; margin-top: 6px; font-size: 16px; }
-    .row { display:flex; gap:10px; margin-top: 14px; }
-    .button { padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; background:#fff; cursor:pointer; font-size:16px; }
+    label { display:block; margin-top: 12px; font-size: 14px; color:#333; font-weight:600; }
+    input, select, textarea {
+      width:100%;
+      padding:10px;
+      border:1px solid #ccc;
+      border-radius: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+      background:#fff;
+    }
+    .row { display:flex; gap:10px; margin-top: 14px; flex-wrap: wrap; }
+    .button {
+      padding:10px 12px;
+      border:1px solid #333;
+      border-radius:10px;
+      text-decoration:none;
+      background:#fff;
+      cursor:pointer;
+      font-size:16px;
+      color:#111;
+      display:inline-block;
+    }
+    .button.primary { background:#111; color:#fff; border-color:#111; }
+    .muted { color:#666; font-size: 13px; margin-top: 6px; }
   </style>
 </head>
 <body>
 
   <div class="card">
-    <h2>Add Fuel</h2>
+    <h2 style="margin:0 0 6px;">Add Fuel</h2>
+    <div class="muted">Fuel entries count as an expense and show in Reports under the “Fuel” category.</div>
 
+    <div class="row">
+      <a class="button" href="/ui">⬅️ Home</a>
+      <a class="button" href="/ui/report">📊 Reports</a>
+    </div>
+  </div>
+
+  <div class="card">
     <form method="post" action="/ui/fuel/new">
       <label>Date</label>
       <input type="date" name="fill_date" required>
+
+      <label>Source</label>
+      <select name="source" required>
+        <option value="rental" {% if default_source == 'rental' %}selected{% endif %}>Rental Property</option>
+        <option value="work" {% if default_source == 'work' %}selected{% endif %}>Work / Business</option>
+        <option value="personal" {% if default_source == 'personal' %}selected{% endif %}>Personal</option>
+      </select>
 
       <label>Odometer (km)</label>
       <input type="number" name="odometer_km" min="0" step="1" required>
@@ -28,11 +63,11 @@
       <label>Total Cost ($)</label>
       <input type="number" name="total_cost" min="0" step="0.01" required>
 
-      <label>Notes</label>
+      <label>Notes (optional)</label>
       <textarea name="notes" rows="3" placeholder="Optional"></textarea>
 
       <div class="row">
-        <button class="button" type="submit">💾 Save Fuel Entry</button>
+        <button class="button primary" type="submit">💾 Save Fuel Entry</button>
         <a class="button" href="/ui">Cancel</a>
       </div>
     </form>
