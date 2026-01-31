@@ -38,12 +38,9 @@ def require_login(credentials: HTTPBasicCredentials = Depends(security)):
     return True
 
 
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from fastapi.templating import Jinja2Templates
 
-from sqlmodel import Field, SQLModel, Session, create_engine, select
+
+
 
 
 db_url = os.getenv("DATABASE_URL", "sqlite:///tracker.db")
