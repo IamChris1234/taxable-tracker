@@ -13,37 +13,9 @@
     th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align:left; }
     h2 { margin: 0 0 6px; }
     .muted { color:#666; font-size: 14px; }
+    .chart-wrap { max-width: 520px; }
   </style>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const pieLabels = [
-    {% for cat, amt in by_category %}
-      "{{ cat }}",
-    {% endfor %}
-  ];
-
-  const pieData = [
-    {% for cat, amt in by_category %}
-      {{ amt }},
-    {% endfor %}
-  ];
-
-  const ctxPie = document.getElementById("expensePie").getContext("2d");
-
-  new Chart(ctxPie, {
-    type: "pie",
-    data: {
-      labels: pieLabels,
-      datasets: [{
-        data: pieData
-      }]
-    },
-    options: {
-      responsive: true
-    }
-  });
-</script>
 
 <body>
 
@@ -85,10 +57,13 @@
 
   <div class="card">
     <h3>Expenses by category</h3>
-    <div class="card">
-  <h3>Expenses by category (pie)</h3>
-  <canvas id="expensePie"></canvas>
-</div>
+
+    <div class="chart-wrap">
+      <canvas id="expensePie"></canvas>
+    </div>
+
+    <div style="height: 10px;"></div>
+
     <table>
       <tr>
         <th>Category</th>
@@ -101,11 +76,41 @@
       </tr>
       {% endfor %}
     </table>
-
-    <div class="muted" style="margin-top:10px;">
-      Next: we’ll add the bar chart here.
-    </div>
   </div>
+
+  <!-- Chart JS (load + run AFTER canvas exists) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const pieLabels = [
+      {% for cat, amt in by_category %}
+        "{{ cat }}",
+      {% endfor %}
+    ];
+
+    const pieData = [
+      {% for cat, amt in by_category %}
+        {{ amt }},
+      {% endfor %}
+    ];
+
+    const canvas = document.getElementById("expensePie");
+    if (canvas) {
+      const ctxPie = canvas.getContext("2d");
+
+      new Chart(ctxPie, {
+        type: "pie",
+        data: {
+          labels: pieLabels,
+          datasets: [{
+            data: pieData
+          }]
+        },
+        options: {
+          responsive: true
+        }
+      });
+    }
+  </script>
 
 </body>
 </html>
