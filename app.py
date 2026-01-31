@@ -14,6 +14,7 @@ from fastapi import (
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter
 
 from sqlmodel import Field, SQLModel, Session, create_engine, select
 
@@ -37,6 +38,7 @@ def require_login(credentials: HTTPBasicCredentials = Depends(security)):
         )
     return True
 
+ui = APIRouter(prefix="/ui", dependencies=[Depends(require_login)])
 
 
 
