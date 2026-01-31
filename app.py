@@ -1,6 +1,3 @@
-# =========================
-# Imports
-# =========================
 from datetime import date
 from typing import Optional
 import os
@@ -68,7 +65,6 @@ if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(db_url, echo=False)
-
 templates = Jinja2Templates(directory="templates")
 
 # =========================
@@ -99,11 +95,11 @@ def on_startup():
     SQLModel.metadata.create_all(engine)
 
 # =========================
-# Public API (optional)
+# Root
 # =========================
 @app.get("/")
 def root():
-    return {"status": "ok", "ui": "/ui", "docs": "/docs"}
+    return {"status": "ok", "ui": "/ui"}
 
 # =========================
 # UI ROUTES (PROTECTED)
@@ -204,7 +200,7 @@ def ui_report(request: Request, year: int = date.today().year):
         ).all()
 
     by_month = {}
-    by_category = {}
+    by_category_expense = {}
     income_total = 0.0
     expense_total = 0.0
 
@@ -212,18 +208,15 @@ def ui_report(request: Request, year: int = date.today().year):
         month = t.tx_date.strftime("%Y-%m")
         by_month.setdefault(month, {"income": 0.0, "expense": 0.0, "net": 0.0})
 
-        by_category[t.category] = by_category.get(t.category, 0.0) + t.amount
-
         if t.type == "income":
             by_month[month]["income"] += t.amount
             income_total += t.amount
         else:
             by_month[month]["expense"] += t.amount
             expense_total += t.amount
+            by_category_expense[t.category] = by_category_expense.get(t.category, 0.0) + t.amount
 
-        by_month[month]["net"] = (
-            by_month[month]["income"] - by_month[month]["expense"]
-        )
+        by_month[month]["net"] = by_month[month]["income"] - by_month[month]["expense"]
 
     return templates.TemplateResponse(
         "report.html",
@@ -235,7 +228,7 @@ def ui_report(request: Request, year: int = date.today().year):
             "expense_total": round(expense_total, 2),
             "net_total": round(income_total - expense_total, 2),
             "by_category": sorted(
-                ((k, round(v, 2)) for k, v in by_category.items()),
+                ((k, round(v, 2)) for k, v in by_category_expense.items()),
                 key=lambda x: x[0],
             ),
         },
@@ -274,13 +267,8 @@ def export_csv(year: int = date.today().year):
     return StreamingResponse(
         output,
         media_type="text/csv",
-        headers={
-            "Content-Disposition": f'attachment; filename="taxable_{year}.csv"'
-        },
+        headers={"Content-Disposition": f'attachment; filename="taxable_{year}.csv"'},
     )
 
-# =========================
-# Register Router (LAST LINE)
-# =========================
+# IMPORTANT: register router at the end
 app.include_router(ui)
-
