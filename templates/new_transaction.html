@@ -2,88 +2,90 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta charset="utf-8" />
     <title>Add Transaction</title>
     <style>
-      body { font-family:-apple-system,system-ui,Arial; margin:24px; }
-      .card { border:1px solid #e6e6e6; border-radius:14px; padding:16px; margin-bottom:14px; }
-      label { display:block; font-weight:600; margin-top:10px; }
+      body { font-family:-apple-system,system-ui,Arial; margin:24px; background:#fafafa; }
+      .card { background:#fff; border:1px solid #e6e6e6; border-radius:14px; padding:16px; max-width:720px; margin:0 auto; }
+      h2 { margin:0 0 6px; }
+      .muted { color:#666; font-size: 13px; margin:0 0 14px; }
+
+      label { display:block; margin-top:12px; font-size:14px; color:#333; }
       input, select {
         padding: 10px;
         width: 100%;
         margin: 6px 0 0;
         border-radius: 10px;
         border: 1px solid #ccc;
-        font-size: 16px;
-        background: #fff;
+        box-sizing: border-box;
+        background:#fff;
       }
-      button, .button {
-        display:inline-block;
+      button {
         padding: 10px 12px;
         border-radius: 10px;
         border: 0;
         background:#111;
         color:#fff;
-        text-decoration:none;
+        width:100%;
+        margin-top:14px;
         cursor:pointer;
-        margin-top: 12px;
       }
-      .button.secondary { background:#fff; color:#111; border:1px solid #111; }
-      .row { display:flex; gap:10px; flex-wrap:wrap; margin-top: 12px; }
-      .muted { color:#666; font-size: 13px; margin-top:6px; }
-      details { margin-top: 10px; }
-      summary { cursor:pointer; font-size: 14px; color:#111; }
-      hr { border:0; border-top:1px solid #eee; margin: 14px 0; }
+      .row { display:flex; gap:10px; margin-top:12px; }
+      .link {
+        display:inline-block;
+        padding:10px 12px;
+        border:1px solid #333;
+        border-radius:10px;
+        text-decoration:none;
+        color:#111;
+        text-align:center;
+        flex:1;
+        background:#fff;
+      }
+      details { margin-top:10px; }
+      details summary { cursor:pointer; color:#111; }
+      .mini { display:flex; gap:8px; margin-top:8px; }
+      .mini input { flex:1; margin:0; }
+      .mini button { width:auto; margin:0; padding:10px 12px; }
+      hr { border:none; border-top:1px solid #eee; margin:16px 0; }
     </style>
   </head>
-
   <body>
     <div class="card">
-      <h2 style="margin:0 0 6px;">Add Transaction</h2>
-      <div class="muted">Use this for rental income, dining, repairs, office supplies, etc.</div>
+      <h2>Add Transaction</h2>
+      <p class="muted">Attach a receipt (PDF/JPG/PNG). On iPhone, you can take a photo.</p>
 
-      <div class="row">
-        <a class="button secondary" href="/ui">⬅️ Home</a>
-        <a class="button secondary" href="/ui/report">📊 Reports</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <form method="post" action="/ui/transaction/new">
-
+      <form method="post" action="/ui/transaction/new" enctype="multipart/form-data">
         <label>Date</label>
-        <input name="tx_date" type="date" required />
+        <input name="tx_date" type="date" required value="{{ default_date or '' }}" />
 
         <label>Source</label>
         <select name="source" required>
-          <option value="rental" {% if default_source == 'rental' %}selected{% endif %}>Rental Property</option>
-          <option value="work" {% if default_source == 'work' %}selected{% endif %}>Work / Business</option>
-          <option value="personal" {% if default_source == 'personal' %}selected{% endif %}>Personal</option>
+          <option value="Rental Property" {% if default_source == 'Rental Property' %}selected{% endif %}>Rental Property</option>
+          <option value="Work Expense" {% if default_source == 'Work Expense' %}selected{% endif %}>Work Expense</option>
         </select>
 
         <label>Type</label>
         <select name="type" required>
-          <option value="income" {% if default_type == 'income' %}selected{% endif %}>Income</option>
-          <option value="expense" {% if default_type == 'expense' %}selected{% endif %}>Expense</option>
+          <option value="income" {% if default_type == 'income' %}selected{% endif %}>income</option>
+          <option value="expense" {% if default_type == 'expense' %}selected{% endif %}>expense</option>
         </select>
 
         <label>Category</label>
         <select name="category" required>
-          <option value="" {% if not default_category %}selected{% endif %}>Select a category…</option>
+          <option value="">Select a category...</option>
           {% for c in categories %}
-            <option value="{{ c.name }}" {% if c.name == default_category %}selected{% endif %}>
-              {{ c.name }}
-            </option>
+            <option value="{{ c }}" {% if default_category == c %}selected{% endif %}>{{ c }}</option>
           {% endfor %}
         </select>
 
         <details>
           <summary>➕ Add a new category</summary>
-          <div class="muted">Add it once and it will show in the dropdown next time.</div>
-          <form method="post" action="/ui/category/add" style="margin-top:10px;">
-            <label>New category name</label>
-            <input type="text" name="name" placeholder="e.g., Appliance Repair, Cleaning, Parking..." required />
-            <button type="submit">Save Category</button>
+          <div class="muted" style="margin-top:6px;">Add it once and it will show in the dropdown next time.</div>
+          <form method="post" action="/ui/category/add" style="margin-top:8px;">
+            <div class="mini">
+              <input type="text" name="name" placeholder="e.g., Repairs, Utilities, Parking..." required />
+              <button type="submit">Save</button>
+            </div>
           </form>
         </details>
 
@@ -98,12 +100,16 @@
         <label>Notes (optional)</label>
         <input name="notes" placeholder="Anything you want to remember" />
 
-        <button type="submit">Save Transaction</button>
-      </form>
-    </div>
+        <label>Receipt (optional)</label>
+        <input name="receipt" type="file" accept="image/*,application/pdf" />
 
-    <div class="muted">
-      Tip: Use <strong>Source</strong> to separate Rental vs Work for clean reports + exports.
+        <button type="submit">💾 Save Transaction</button>
+      </form>
+
+      <div class="row">
+        <a class="link" href="/ui">← Back</a>
+        <a class="link" href="/ui/report">📊 Reports</a>
+      </div>
     </div>
   </body>
 </html>
