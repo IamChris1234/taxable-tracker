@@ -1,35 +1,29 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Reports</title>
   <style>
-    body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
-    .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-    .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    .row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
-    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; color:#111; background:#fff; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align:left; }
-    h2, h3 { margin: 0 0 6px; }
-    .muted { color:#666; font-size: 14px; }
-    .grid { display:grid; grid-template-columns: 1fr; gap:14px; }
-    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    body { font-family:-apple-system,system-ui,Arial; margin:24px; }
+    .card { border:1px solid #e6e6e6; border-radius:14px; padding:16px; margin-bottom:14px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px 8px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    h2 { margin:0 0 6px; }
+    .muted { color:#666; font-size:14px; }
+    canvas { max-width: 520px; }
   </style>
 </head>
 <body>
 
-  <div class="top">
-    <h2 style="margin:0;">Reports — {{ year }}</h2>
-    <a class="button" href="/ui/logout">Log out</a>
-  </div>
-
   <div class="card">
-    <div class="muted">Year-to-date totals (includes Fuel)</div>
+    <h2>📊 Reports — {{ year }}</h2>
+    <div class="muted">Year totals</div>
+
     <div class="row">
-      <a class="button" href="/ui">⬅️ Home</a>
-      <a class="button" href="/ui/export.csv?year={{ year }}&source={{ source }}">📤 Export CSV</a>
+      <a class="button" href="/ui">🏠 Home</a>
+      <a class="button" href="/ui/transaction/new">➕ Add Transaction</a>
     </div>
 
     <div style="margin-top:12px;">
@@ -39,63 +33,51 @@
     </div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h3>Monthly breakdown</h3>
-      <table>
-        <tr>
-          <th>Month</th><th>Income</th><th>Expenses</th><th>Net</th>
-        </tr>
-        {% for month, m in months %}
-        <tr>
-          <td>{{ month }}</td>
-          <td>${{ '%.2f'|format(m["income"]) }}</td>
-          <td>${{ '%.2f'|format(m["expense"]) }}</td>
-          <td>${{ '%.2f'|format(m["net"]) }}</td>
-        </tr>
-        {% endfor %}
-      </table>
-    </div>
+  <div class="card">
+    <h3>🥧 Expenses by category</h3>
+    <canvas id="expensePie"></canvas>
 
-    <div class="card">
-      <h3>Expenses by category (pie)</h3>
-      <canvas id="expensePie"></canvas>
-      <div class="muted" style="margin-top:10px;">Tip: tap legend items to hide/show.</div>
-    </div>
+    <table style="margin-top:14px;">
+      <tr><th>Category</th><th>Total</th></tr>
+      {% for cat, amt in by_category %}
+      <tr><td>{{ cat }}</td><td>${{ '%.2f'|format(amt) }}</td></tr>
+      {% endfor %}
+    </table>
   </div>
 
   <div class="card">
-    <h3>Expenses by category</h3>
+    <h3>📋 All transactions</h3>
     <table>
-      <tr><th>Category</th><th>Total</th></tr>
-      {% for cat, amt in by_category %}
       <tr>
-        <td>{{ cat }}</td>
-        <td>${{ '%.2f'|format(amt) }}</td>
+        <th>Date</th><th>Source</th><th>Type</th><th>Category</th><th>Amount</th><th>Vendor</th><th>Notes</th>
+      </tr>
+      {% for t in transactions %}
+      <tr>
+        <td>{{ t.tx_date }}</td>
+        <td>{{ t.source }}</td>
+        <td>{{ t.type }}</td>
+        <td>{{ t.category }}</td>
+        <td>${{ '%.2f'|format(t.amount) }}</td>
+        <td>{{ t.vendor or '' }}</td>
+        <td>{{ t.notes or '' }}</td>
       </tr>
       {% endfor %}
     </table>
   </div>
 
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const pieLabels = [
-      {% for cat, amt in by_category %}
-        "{{ cat }}",
-      {% endfor %}
+      {% for cat, amt in by_category %}"{{ cat }}",{% endfor %}
     ];
-
     const pieData = [
-      {% for cat, amt in by_category %}
-        {{ amt }},
-      {% endfor %}
+      {% for cat, amt in by_category %}{{ amt }},{% endfor %}
     ];
 
     const canvas = document.getElementById("expensePie");
     if (canvas) {
-      const ctxPie = canvas.getContext("2d");
-      new Chart(ctxPie, {
+      const ctx = canvas.getContext("2d");
+      new Chart(ctx, {
         type: "pie",
         data: {
           labels: pieLabels,
