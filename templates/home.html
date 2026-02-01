@@ -5,78 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Taxable Tracker</title>
   <style>
-    body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
-    .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0 0; }
-    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align:left; }
-    h2 { margin: 0; }
-    .muted { color:#666; font-size: 14px; }
+    body { font-family:-apple-system,system-ui,Arial; margin:24px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .card { border:1px solid #e6e6e6; border-radius:14px; padding:16px; margin-top:14px; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .btn { padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; color:#111; display:inline-block; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td { padding:10px 8px; border-bottom:1px solid #eee; text-align:left; font-size:14px; }
+    .muted { color:#666; font-size:13px; }
+    .pill { font-size:12px; padding:4px 8px; border:1px solid #ddd; border-radius:999px; }
   </style>
-  <style>
-  .topbar {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom: 14px;
-  }
-  .brand a { text-decoration:none; color: inherit; font-weight: 700; }
-  .actions { display:flex; gap: 10px; }
-  .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
-</style>
-
 </head>
 <body>
-<div class="topbar">
-  <div class="brand"><a href="/ui">Taxable Tracker</a></div>
-  <div class="actions">
-    <a class="button" href="/ui/logout">Log out</a>
+
+  <div class="top">
+    <h2 style="margin:0;">Taxable Tracker</h2>
+    <a class="btn" href="/ui/logout">Log out</a>
   </div>
-</div>
 
   <div class="card">
-    <h2>Taxable Tracker</h2>
-    <div class="muted">Quick actions</div>
-
     <div class="row">
-      <a class="button" href="/ui/transaction/new?type=expense">➕ Add Expense</a>
-      <a class="button" href="/ui/transaction/new?type=income">➕ Add Income</a>
-      <a class="button" href="/ui/fuel/new">⛽ Add Fuel</a>
-      <a class="button" href="/ui/report">📊 Reports</a>
+      <a class="btn" href="/ui/transaction/new">➕ Add Transaction</a>
+      <a class="btn" href="/ui/fuel/new">⛽ Add Fuel</a>
+      <a class="btn" href="/ui/report">📊 Reports</a>
+    </div>
+    <div class="muted" style="margin-top:10px;">
+      Receipts save to: <span class="pill">{{ request.app.extra.get("receipts_dir","(set RECEIPTS_DIR env var)") }}</span>
     </div>
   </div>
 
   <div class="card">
-    <h3>Recent transactions</h3>
+    <h3 style="margin:0 0 8px;">Recent Transactions</h3>
     <table>
       <tr>
-        <th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Vendor</th>
+        <th>Date</th><th>Source</th><th>Type</th><th>Category</th><th>Amount</th><th>Receipt</th>
       </tr>
       {% for t in transactions %}
       <tr>
         <td>{{ t.tx_date }}</td>
+        <td>{{ t.source }}</td>
         <td>{{ t.type }}</td>
         <td>{{ t.category }}</td>
         <td>${{ '%.2f'|format(t.amount) }}</td>
-        <td>{{ t.vendor or '' }}</td>
+        <td>
+          {% if t.receipt_path %}
+            <a href="/ui/receipt/tx/{{ t.id }}">View</a>
+          {% else %}
+            —
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </table>
   </div>
 
   <div class="card">
-    <h3>Recent fuel</h3>
+    <h3 style="margin:0 0 8px;">Recent Fuel</h3>
     <table>
       <tr>
-        <th>Date</th><th>Odometer (km)</th><th>Total cost</th><th>Notes</th>
+        <th>Date</th><th>Odometer</th><th>Cost</th><th>Receipt</th>
       </tr>
       {% for f in fuel %}
       <tr>
         <td>{{ f.fill_date }}</td>
-        <td>{{ f.odometer_km }}</td>
+        <td>{{ f.odometer_km }} km</td>
         <td>${{ '%.2f'|format(f.total_cost) }}</td>
-        <td>{{ f.notes or '' }}</td>
+        <td>
+          {% if f.receipt_path %}
+            <a href="/ui/receipt/fuel/{{ f.id }}">View</a>
+          {% else %}
+            —
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </table>

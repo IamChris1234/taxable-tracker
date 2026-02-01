@@ -6,26 +6,30 @@
   <title>Reports</title>
   <style>
     body { font-family: -apple-system, system-ui, Arial; margin: 24px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
     .card { border: 1px solid #e6e6e6; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
     .row { display:flex; gap:10px; flex-wrap: wrap; margin-top: 10px; }
-    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; }
+    .button { display:inline-block; padding:10px 12px; border:1px solid #333; border-radius:10px; text-decoration:none; color:#111; background:#fff; }
     table { width:100%; border-collapse: collapse; }
     th, td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align:left; }
-    h2 { margin: 0 0 6px; }
+    h2, h3 { margin: 0 0 6px; }
     .muted { color:#666; font-size: 14px; }
-    .chart-wrap { max-width: 520px; }
+    .grid { display:grid; grid-template-columns: 1fr; gap:14px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
   </style>
 </head>
-
 <body>
 
-  <div class="card">
-    <h2>Reports — {{ year }}</h2>
-    <div class="muted">Year-to-date totals</div>
+  <div class="top">
+    <h2 style="margin:0;">Reports — {{ year }}</h2>
+    <a class="button" href="/ui/logout">Log out</a>
+  </div>
 
+  <div class="card">
+    <div class="muted">Year-to-date totals (includes Fuel)</div>
     <div class="row">
       <a class="button" href="/ui">⬅️ Home</a>
-      <a class="button" href="/ui/export.csv?year={{ year }}">📤 Export CSV</a>
+      <a class="button" href="/ui/export.csv?year={{ year }}&source={{ source }}">📤 Export CSV</a>
     </div>
 
     <div style="margin-top:12px;">
@@ -35,40 +39,35 @@
     </div>
   </div>
 
-  <div class="card">
-    <h3>Monthly breakdown</h3>
-    <table>
-      <tr>
-        <th>Month</th>
-        <th>Income</th>
-        <th>Expenses</th>
-        <th>Net</th>
-      </tr>
-      {% for month, m in months %}
-      <tr>
-        <td>{{ month }}</td>
-        <td>${{ '%.2f'|format(m["income"]) }}</td>
-        <td>${{ '%.2f'|format(m["expense"]) }}</td>
-        <td>${{ '%.2f'|format(m["net"]) }}</td>
-      </tr>
-      {% endfor %}
-    </table>
+  <div class="grid">
+    <div class="card">
+      <h3>Monthly breakdown</h3>
+      <table>
+        <tr>
+          <th>Month</th><th>Income</th><th>Expenses</th><th>Net</th>
+        </tr>
+        {% for month, m in months %}
+        <tr>
+          <td>{{ month }}</td>
+          <td>${{ '%.2f'|format(m["income"]) }}</td>
+          <td>${{ '%.2f'|format(m["expense"]) }}</td>
+          <td>${{ '%.2f'|format(m["net"]) }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Expenses by category (pie)</h3>
+      <canvas id="expensePie"></canvas>
+      <div class="muted" style="margin-top:10px;">Tip: tap legend items to hide/show.</div>
+    </div>
   </div>
 
   <div class="card">
     <h3>Expenses by category</h3>
-
-    <div class="chart-wrap">
-      <canvas id="expensePie"></canvas>
-    </div>
-
-    <div style="height: 10px;"></div>
-
     <table>
-      <tr>
-        <th>Category</th>
-        <th>Total</th>
-      </tr>
+      <tr><th>Category</th><th>Total</th></tr>
       {% for cat, amt in by_category %}
       <tr>
         <td>{{ cat }}</td>
@@ -78,7 +77,7 @@
     </table>
   </div>
 
-  <!-- Chart JS (load + run AFTER canvas exists) -->
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const pieLabels = [
@@ -96,18 +95,13 @@
     const canvas = document.getElementById("expensePie");
     if (canvas) {
       const ctxPie = canvas.getContext("2d");
-
       new Chart(ctxPie, {
         type: "pie",
         data: {
           labels: pieLabels,
-          datasets: [{
-            data: pieData
-          }]
+          datasets: [{ data: pieData }]
         },
-        options: {
-          responsive: true
-        }
+        options: { responsive: true }
       });
     }
   </script>
